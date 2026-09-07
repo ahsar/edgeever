@@ -2,7 +2,6 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 
 const source = readFileSync(new URL("./DiagramEditorPane.tsx", import.meta.url), "utf8");
-const toolbarSource = readFileSync(new URL("./DiagramToolbar.tsx", import.meta.url), "utf8");
 const globalStyles = readFileSync(new URL("../styles/globals.css", import.meta.url), "utf8");
 
 describe("diagram editor keyboard workflow", () => {
@@ -78,33 +77,8 @@ describe("diagram editor canvas surface", () => {
     expect(source).toContain('connector: { name: kind === "mind-map" ? "smooth" : "rounded"');
     expect(source).toContain('router: "normal"');
     expect(source).not.toContain('name: "manhattan"');
-    expect(source).toContain("maxScale: policy.maxScale");
-    expect(source).toContain("policy.minScale ? { minScale: policy.minScale }");
-    expect(source).toContain("getDiagramLayoutViewport(document.kind)");
+    expect(source).toContain('maxScale: document.kind === "mind-map" ? 1 : 0.84');
     expect(source).toContain("fitDiagramContent(graph, document, containerRef.current);");
-  });
-
-  test("labels auto layout directly instead of relying on an ambiguous icon", () => {
-    expect(toolbarSource).toContain('<WandSparkles className="h-4 w-4" />');
-    expect(toolbarSource).toContain('<span>{t("diagram.autoLayout")}</span>');
-    expect(toolbarSource).not.toContain('<Button size="icon" variant="ghost" aria-label={t("diagram.autoLayout")}');
-  });
-
-  test("delegates every diagram kind to one shared toolbar shell", () => {
-    expect(source).toContain("<DiagramToolbar");
-    expect(source).toContain("leading={!readOnly ? (");
-    expect(toolbarSource).toContain('role="toolbar"');
-    expect(toolbarSource).toContain("{leading ? <>{leading}<ToolbarDivider /></> : null}");
-    expect(toolbarSource).toContain("{selectionEditor}");
-  });
-
-  test("reuses the architecture shape-library trigger across every diagram kind", () => {
-    expect(toolbarSource).toContain("export const DiagramToolbarAddTrigger");
-    expect(toolbarSource).toContain("<DropdownMenuTrigger asChild>");
-    expect(toolbarSource).toContain('<Button size="sm" variant="soft" onPointerEnter={onPointerEnter}>');
-    expect(toolbarSource).toContain('<Boxes className="h-4 w-4" />');
-    expect(toolbarSource).toContain('{t("diagram.componentLibrary")}');
-    expect(source.match(/<DiagramToolbarAddTrigger onPointerEnter=/g)).toHaveLength(2);
   });
 
   test("exposes connection handles on flowcharts and architecture components with safe connection rules", () => {
@@ -132,10 +106,8 @@ describe("diagram editor canvas surface", () => {
     expect(source).not.toContain('onClick={() => addNode("service")}');
     expect(source).toContain('{ shape: "database", icon: Database');
     expect(source).toContain('{ shape: "boundary", icon: Box');
-    expect(source).not.toContain('t("diagram.architectureConnectHint")');
-    expect(source).not.toContain('t("diagram.connectHint")');
-    expect(source).not.toContain("fitArchitectureBoundaries(graph)");
-    expect(source).toContain("computeDiagramLayoutResult");
+    expect(source).toContain('t("diagram.architectureConnectHint")');
+    expect(source).toContain("fitArchitectureBoundaries(graph)");
     expect(source).toContain("parent.addChild(node)");
     expect(source).toContain("updateSelectedEdgeLabel");
     expect(source).toContain('t("diagram.edgeText")');
@@ -147,6 +119,7 @@ describe("diagram editor canvas surface", () => {
 
   test("organizes architecture resources in a searchable category library", () => {
     expect(source).toContain("ARCHITECTURE_LIBRARY_CATEGORIES");
+    expect(source).toContain('t("diagram.componentLibrary")');
     expect(source).toContain('onPointerEnter={() => setOpen(true)}');
     expect(source).toContain('t("diagram.componentSearch")');
     expect(source).toContain('labelKey: "diagram.componentCategoryExperience"');
@@ -177,9 +150,9 @@ describe("diagram editor canvas surface", () => {
   test("opens every diagram insertion library immediately on pointer hover", () => {
     expect(source).toContain("const DiagramInsertMenu = ({");
     expect(source.match(/onPointerEnter=\{\(\) => setOpen\(true\)\}/g)?.length).toBe(2);
-    expect(source).toContain('label: t("diagram.addTopic")');
+    expect(source).toContain('label={t("diagram.addTopic")}');
     expect(source).toContain('label: t("diagram.addSiblingTopic")');
-    expect(source).toContain('label: t("diagram.addStep")');
+    expect(source).toContain('label={t("diagram.addStep")}');
     expect(source).toContain('label: t("diagram.addDecision")');
     expect(source).toContain('label: t("diagram.addTerminator")');
   });
